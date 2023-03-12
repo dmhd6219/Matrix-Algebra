@@ -15,6 +15,7 @@ public:
 };
 
 
+
 class Matrix {
 protected:
     unsigned int n;
@@ -44,29 +45,20 @@ public:
         }
     }
 
-    Matrix getIdentity() {
-        Matrix identity = Matrix(this->n, this->m);
-        int size = min(identity.n, identity.m);
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                if (i == j) {
-                    identity.setValue(i, j, 1);
-                } else {
-                    identity.setValue(i, j, 0);
-                }
-            }
-        }
+    int getN(){
+        return n;
     }
 
-    Matrix getElimination(int r, int c) {
-        int pivot = getValue(r, r);
+    int getM(){
+        return m;
     }
+
 
     void setValue(int i, int j, int value) {
         data[i][j] = value;
     }
 
-    int getValue(int i, int j) {
+    int getValue(int i, int j){
         return data[i][j];
     }
 
@@ -147,8 +139,8 @@ public:
     }
 
     friend ostream &operator<<(ostream &os, Matrix &matrix) {
-        for (int i = 0; i < matrix.n; i++) {
-            for (int j = 0; j < matrix.m; j++) {
+        for (int i = 0; i < matrix.n; i++){
+            for (int j = 0; j < matrix.m; j++){
                 os << matrix.getValue(i, j) << " ";
             }
             os << endl;
@@ -159,10 +151,25 @@ public:
 
 };
 
-class SquareMatrix : public Matrix {
+class SquareMatrix:public Matrix{
 public:
     SquareMatrix(int n) : Matrix(n, n) {
 
+    }
+};
+
+class IdentityMatrix:public SquareMatrix{
+    IdentityMatrix(int n) : SquareMatrix(n) {
+        for (int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                data[i][j] = 1;
+            }
+        }
+    }
+
+    Matrix getIdentityFromMatrix(Matrix matrix){
+        int size = min(matrix.getN(), matrix.getM());
+        return IdentityMatrix(size);
     }
 };
 
