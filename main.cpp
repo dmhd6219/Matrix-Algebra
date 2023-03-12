@@ -16,7 +16,7 @@ public:
 
 
 class Matrix {
-private:
+protected:
     unsigned int n;
     unsigned int m;
     int **data;
@@ -44,22 +44,21 @@ public:
         }
     }
 
-    Matrix getIdentity(){
+    Matrix getIdentity() {
         Matrix identity = Matrix(this->n, this->m);
         int size = min(identity.n, identity.m);
-        for (int i = 0; i < size; i++){
-            for (int j = 0; j < size; j++){
-                if (i == j){
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (i == j) {
                     identity.setValue(i, j, 1);
-                }
-                else{
+                } else {
                     identity.setValue(i, j, 0);
                 }
             }
         }
     }
 
-    Matrix getElimination(int r, int c){
+    Matrix getElimination(int r, int c) {
         int pivot = getValue(r, r);
     }
 
@@ -67,7 +66,7 @@ public:
         data[i][j] = value;
     }
 
-    int getValue(int i, int j){
+    int getValue(int i, int j) {
         return data[i][j];
     }
 
@@ -148,8 +147,8 @@ public:
     }
 
     friend ostream &operator<<(ostream &os, Matrix &matrix) {
-        for (int i = 0; i < matrix.n; i++){
-            for (int j = 0; j < matrix.m; j++){
+        for (int i = 0; i < matrix.n; i++) {
+            for (int j = 0; j < matrix.m; j++) {
                 os << matrix.getValue(i, j) << " ";
             }
             os << endl;
@@ -160,14 +159,62 @@ public:
 
 };
 
+class SquareMatrix : public Matrix {
+public:
+    SquareMatrix(int n) : Matrix(n, n) {
+
+    }
+};
+
 int main() {
 
-    int n1;
+    int n1, n2, n3;
 
     cin >> n1;
-    Matrix a = Matrix(n1, n1);
+    Matrix a = SquareMatrix(n1);
     cin >> a;
 
+    cin >> n2;
+    Matrix b = SquareMatrix(n2);
+    cin >> b;
+
+    cin >> n3;
+    Matrix c = SquareMatrix(n3);
+    cin >> c;
+
+    try {
+        Matrix d = a + b;
+        cout << d;
+    }
+    catch (MatrixDimensionMismatch e) {
+        cout << e.what() << endl;
+    }
+
+    try {
+        Matrix e = b - a;
+        cout << e;
+    }
+    catch (MatrixDimensionMismatch e) {
+        cout << e.what() << endl;
+    }
+
+    try {
+        Matrix f = c * a;
+        cout << f;
+    }
+    catch (MatrixDimensionMismatch e) {
+        cout << e.what() << endl;
+    }
+
+    try {
+        Matrix g = a.transpose();
+        cout << g;
+    }
+    catch (MatrixDimensionMismatch e) {
+        cout << e.what() << endl;
+    }
+
+    cout << endl;
 
 }
 
