@@ -15,7 +15,6 @@ public:
 };
 
 
-
 class Matrix {
 protected:
     unsigned int n;
@@ -45,11 +44,11 @@ public:
         }
     }
 
-    int getN(){
+    int getN() {
         return n;
     }
 
-    int getM(){
+    int getM() {
         return m;
     }
 
@@ -58,8 +57,17 @@ public:
         data[i][j] = value;
     }
 
-    int getValue(int i, int j){
+    int getValue(int i, int j) {
         return data[i][j];
+    }
+
+    int* getRow(int i){
+        int ans[n];
+        for (int k = 0; k < n; k++){
+            ans[k] = data[i][k];
+        }
+
+        return ans;
     }
 
     Matrix operator+(Matrix const secondMatrix) const {
@@ -139,8 +147,8 @@ public:
     }
 
     friend ostream &operator<<(ostream &os, Matrix &matrix) {
-        for (int i = 0; i < matrix.n; i++){
-            for (int j = 0; j < matrix.m; j++){
+        for (int i = 0; i < matrix.n; i++) {
+            for (int j = 0; j < matrix.m; j++) {
                 os << matrix.getValue(i, j) << " ";
             }
             os << endl;
@@ -151,25 +159,47 @@ public:
 
 };
 
-class SquareMatrix:public Matrix{
+class SquareMatrix : public Matrix {
 public:
     SquareMatrix(int n) : Matrix(n, n) {
 
     }
 };
 
-class IdentityMatrix:public SquareMatrix{
+class IdentityMatrix : public SquareMatrix {
+public:
     IdentityMatrix(int n) : SquareMatrix(n) {
-        for (int i = 0; i < n; i++){
-            for (int j = 0; j < n; j++){
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 data[i][j] = 1;
             }
         }
     }
 
-    Matrix getIdentityFromMatrix(Matrix matrix){
-        int size = min(matrix.getN(), matrix.getM());
+    Matrix getIdentityFromMatrix(Matrix matrix) {
+        int size = max(matrix.getN(), matrix.getM());
         return IdentityMatrix(size);
+    }
+};
+
+class EliminationMatrix : public IdentityMatrix {
+public:
+    EliminationMatrix(Matrix matrix, int i, int j) : IdentityMatrix(matrix.getN()) {
+        double e = - data[i][j] / data[j][j];
+        setValue(i, j, e);
+        // TODO could be some problems with double type
+    }
+};
+
+class PermutationMatrix : public IdentityMatrix {
+public:
+    PermutationMatrix(Matrix matrix, int i, int j) : IdentityMatrix(matrix.getN()) {
+        i--;
+        j--;
+        setValue(i, i, 0);
+        setValue(j, j, 0);
+        setValue(i, j, 1);
+        setValue(j, i, 1);
     }
 };
 
