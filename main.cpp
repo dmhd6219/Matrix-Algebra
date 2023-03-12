@@ -185,6 +185,8 @@ public:
 class EliminationMatrix : public IdentityMatrix {
 public:
     EliminationMatrix(Matrix matrix, int i, int j) : IdentityMatrix(matrix.getN()) {
+        i--;
+        j--;
         double e = - data[i][j] / data[j][j];
         setValue(i, j, e);
         // TODO could be some problems with double type
