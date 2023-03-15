@@ -196,7 +196,7 @@ public:
     EliminationMatrix(Matrix matrix, int i, int j) : IdentityMatrix(matrix.getN()) {
         i--;
         j--;
-        double e = -data[i][j] / data[j][j];
+        double e = -matrix.getValue(i, j) / matrix.getValue(j, j);
         setValue(i, j, e);
         // TODO could be some problems with double type
     }
@@ -219,12 +219,28 @@ int main() {
     int n;
 
     cin >> n;
-    SquareMatrix a = SquareMatrix(n);
+    Matrix a = SquareMatrix(n);
     cin >> a;
 
-    IdentityMatrix i = IdentityMatrix(a);
+    Matrix i = IdentityMatrix(3);
+    Matrix e = EliminationMatrix(a, 2, 1);
+    Matrix b = e * a;
+    Matrix p = PermutationMatrix(a, 2, 1);
+    Matrix c = p * a;
 
-    cout << i << endl;
+
+    cout << i;
+    cout << e;
+    cout << b;
+    cout << p;
+    cout << c;
+
+//    cout << "i :" <<  endl << i << endl << "-------" << endl;
+//    cout << "e :" <<  endl << e << endl << "-------" << endl;
+//    cout << "e * a :" <<  endl << b << endl << "-------" << endl;
+//    cout << "p :" <<  endl << p << endl << "-------" << endl;
+//    cout << "p * a :" <<  endl << c << endl << "-------" << endl;
+
 
 
 }
