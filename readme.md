@@ -1,4 +1,5 @@
 # Task 1
+In C++ programming language write an OOP program that allows to:
 * store matrices n by m (create a necessary class);
 * input / output matrices with the use of cin / cout operators (overload the necessary operators);
 * assign one matrix to another (overload = operator);
