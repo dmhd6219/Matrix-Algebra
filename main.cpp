@@ -156,6 +156,7 @@ public:
         return os;
     }
 
+    double getDeterminant();
 
 };
 
@@ -214,6 +215,30 @@ public:
     }
 };
 
+double Matrix::getDeterminant() {
+// TODO correct indexes
+    Matrix result = IdentityMatrix(n);
+    int steps = 1;
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            int elem = getValue(i, j);
+            if (elem != 0) {
+                cout << "step#" + to_string(steps) + ": elimination";
+                Matrix e = EliminationMatrix(*(this), i, j);
+                result = result * e;
+                steps++;
+            }
+        }
+    }
+    double det = 0;
+    for (int i = 0; i < n; i++) {
+        det += result.getValue(i, i);
+    }
+    return det;
+
+
+}
+
 int main() {
 
     int n;
@@ -222,18 +247,7 @@ int main() {
     Matrix a = SquareMatrix(n);
     cin >> a;
 
-    Matrix i = IdentityMatrix(3);
-    Matrix e = EliminationMatrix(a, 2, 1);
-    Matrix b = e * a;
-    Matrix p = PermutationMatrix(a, 2, 1);
-    Matrix c = p * a;
-
-
-    cout << i;
-    cout << e;
-    cout << b;
-    cout << p;
-    cout << c;
+    a.getDeterminant();
 
 //    cout << "i :" <<  endl << i << endl << "-------" << endl;
 //    cout << "e :" <<  endl << e << endl << "-------" << endl;
