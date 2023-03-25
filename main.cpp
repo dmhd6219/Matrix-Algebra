@@ -225,9 +225,26 @@ double Matrix::getDeterminant() {
     int steps = 1;
 
     for (int j = 0; j < getM(); j++) {
+        if (j != result.getM() - 1){
+            double pivot = result.getValue(j, j);
+            int pivot_i = j;
+            for (int i = 0; i < getN(); i++){
+                if (abs(result.getValue(i, j)) > abs(pivot)){
+                    pivot = result.getValue(i, j);
+                    pivot_i = i;
+                }
+            }
+            if (pivot_i != j){
+                Matrix p = PermutationMatrix(result, pivot_i + 1, j + 1);
+                result = p * result;
+                cout << "step #" << steps << ": permutation" << endl;
+                cout << result;
+                steps++;
+            }
+        }
         for (int i = j + 1; i < getN(); i++) {
             if (result.getValue(i, j) != 0){
-                Matrix e = EliminationMatrix(*(this), i + 1, j + 1);
+                Matrix e = EliminationMatrix(result, i + 1, j + 1);
                 result = e * result;
                 cout << "step #" << steps << ": elimination" << endl;
                 cout << result;
