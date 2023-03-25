@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -19,30 +20,22 @@ class Matrix {
 protected:
     unsigned int n;
     unsigned int m;
-    int **data;
+    double **data;
 
 public:
     Matrix(int cols, int rows) {
         n = cols;
         m = rows;
 
-        data = new int *[cols];
+        data = new double *[cols];
         for (int i = 0; i < cols; i++) {
-            data[i] = new int[rows];
+            data[i] = new double [rows];
             for (int j = 0; j < rows; j++) {
                 data[i][j] = 0;
             }
         }
     }
 
-    void print() {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                cout << data[i][j] << " ";
-            }
-            cout << endl;
-        }
-    }
 
     int getN() {
         return n;
@@ -53,20 +46,30 @@ public:
     }
 
 
-    void setValue(int i, int j, int value) {
+    void setValue(int i, int j, double value) {
         data[i][j] = value;
     }
 
-    int getValue(int i, int j) {
+    double getValue(int i, int j) {
         return data[i][j];
     }
 
-    int *getRow(int i) {
-        int ans[n];
-        for (int k = 0; k < n; k++) {
-            ans[k] = data[i][k];
-        }
+//    double *getRow(int i) {
+//        double ans[n];
+//        for (int k = 0; k < n; k++) {
+//            ans[k] = data[i][k];
+//        }
+//
+//        return ans;
+//    }
 
+    Matrix getCopy() {
+        Matrix ans = Matrix(getN(), getM());
+        for (int i = 0; i < getN(); i++) {
+            for (int j = 0; j < getM(); j++) {
+                ans.setValue(i, j, getValue(i, j));
+            }
+        }
         return ans;
     }
 
@@ -133,12 +136,13 @@ public:
         data = otherMatrix.data;
         n = otherMatrix.n;
         m = otherMatrix.m;
+        return *this;
     }
 
     friend istream &operator>>(istream &is, Matrix &matrix) {
         for (int i = 0; i < matrix.n; i++) {
             for (int j = 0; j < matrix.m; j++) {
-                int t;
+                double t;
                 is >> t;
                 matrix.setValue(i, j, t);
             }
@@ -149,7 +153,7 @@ public:
     friend ostream &operator<<(ostream &os, Matrix &matrix) {
         for (int i = 0; i < matrix.n; i++) {
             for (int j = 0; j < matrix.m; j++) {
-                os << matrix.getValue(i, j) << " ";
+                os << setprecision (2) << fixed << matrix.getValue(i, j) << " ";
             }
             os << endl;
         }
@@ -217,30 +221,32 @@ public:
 
 double Matrix::getDeterminant() {
 // TODO correct indexes
-    Matrix result = IdentityMatrix(n);
+    Matrix result = getCopy();
     int steps = 1;
-    for (int i = 0; i < n; i++) {
-        for (int j = i + 1; j < n; j++) {
-            int elem = getValue(i, j);
-            if (elem != 0) {
-                cout << "step#" + to_string(steps) + ": elimination";
-                Matrix e = EliminationMatrix(*(this), i, j);
-                result = result * e;
+
+    for (int j = 0; j < getM(); j++) {
+        for (int i = j + 1; i < getN(); i++) {
+            if (result.getValue(i, j) != 0){
+                Matrix e = EliminationMatrix(*(this), i + 1, j + 1);
+                result = e * result;
+                cout << "step #" << steps << ": elimination" << endl;
+                cout << result;
                 steps++;
             }
         }
     }
-    double det = 0;
+
+    double det = 1;
     for (int i = 0; i < n; i++) {
-        det += result.getValue(i, i);
+        det *= result.getValue(i, i);
     }
+    cout << "result:" << endl << setprecision (2) << fixed << det << endl;
     return det;
 
 
 }
 
 int main() {
-
     int n;
 
     cin >> n;
