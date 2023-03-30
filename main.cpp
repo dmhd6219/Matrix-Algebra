@@ -255,7 +255,6 @@ public:
 
 double Matrix::getDeterminant() {
     Matrix result = getCopy();
-    int steps = 1;
 
     for (int j = 0; j < getM(); j++) {
         if (j != result.getM() - 1) {
@@ -270,18 +269,12 @@ double Matrix::getDeterminant() {
             if (pivot_i != j) {
                 Matrix p = PermutationMatrix(result, pivot_i + 1, j + 1);
                 result = p * result;
-                cout << "step #" << steps << ": permutation" << endl;
-                cout << result;
-                steps++;
             }
         }
         for (int i = j + 1; i < getN(); i++) {
             if (result.getValue(i, j) != 0) {
                 Matrix e = EliminationMatrix(result, i + 1, j + 1);
                 result = e * result;
-                cout << "step #" << steps << ": elimination" << endl;
-                cout << result;
-                steps++;
             }
         }
     }
@@ -290,7 +283,6 @@ double Matrix::getDeterminant() {
     for (int i = 0; i < n; i++) {
         det *= result.getValue(i, i);
     }
-    cout << "result:" << endl << setprecision(2) << fixed << det << endl;
     return det;
 }
 
@@ -300,13 +292,6 @@ Matrix Matrix::getInverse() {
     }
     Matrix left = getCopy();
     Matrix right = IdentityMatrix(getN());
-
-    int steps = 0;
-
-    cout << "step #" << steps << ": Augmented Matrix" << endl;
-    printAugmented(left, right);
-    steps++;
-    cout << "Direct way:" << endl;
 
     for (int j = 0; j < getM(); j++) {
         if (j != left.getM() - 1) {
@@ -322,9 +307,6 @@ Matrix Matrix::getInverse() {
                 Matrix p = PermutationMatrix(left, pivot_i + 1, j + 1);
                 left = p * left;
                 right = p * right;
-                cout << "step #" << steps << ": permutation" << endl;
-                printAugmented(left, right);
-                steps++;
             }
         }
         for (int i = j + 1; i < getN(); i++) {
@@ -332,14 +314,10 @@ Matrix Matrix::getInverse() {
                 Matrix e = EliminationMatrix(left, i + 1, j + 1);
                 left = e * left;
                 right = e * right;
-                cout << "step #" << steps << ": elimination" << endl;
-                printAugmented(left, right);
-                steps++;
             }
         }
     }
 
-    cout << "Way back:" << endl;
     for (int j = getM() - 1; j >= 0; j--) {
 
         for (int i = j - 1; i >= 0; i--) {
@@ -347,9 +325,6 @@ Matrix Matrix::getInverse() {
                 Matrix e = EliminationMatrix(left, i + 1, j + 1);
                 left = e * left;
                 right = e * right;
-                cout << "step #" << steps << ": elimination" << endl;
-                printAugmented(left, right);
-                steps++;
             }
         }
     }
@@ -363,12 +338,6 @@ Matrix Matrix::getInverse() {
         }
     }
 
-    cout << "Diagonal normalization:" << endl;
-    printAugmented(left, right);
-
-    cout << "result:" << endl;
-    cout << right;
-
     return right;
 }
 
@@ -380,13 +349,6 @@ Matrix Matrix::solveEquation(Matrix b) {
     }
     Matrix left = getCopy();
     Matrix right = b.getCopy();
-
-    int steps = 0;
-
-    cout << "step #" << steps << ":" << endl;
-    cout << left;
-    cout << right;
-    steps++;
 
     for (int j = 0; j < getM(); j++) {
         if (j != left.getM() - 1) {
@@ -402,10 +364,6 @@ Matrix Matrix::solveEquation(Matrix b) {
                 Matrix p = PermutationMatrix(left, pivot_i + 1, j + 1);
                 left = p * left;
                 right = p * right;
-                cout << "step #" << steps << ": permutation" << endl;
-                cout << left;
-                cout << right;
-                steps++;
             }
         }
         for (int i = j + 1; i < getN(); i++) {
@@ -413,10 +371,6 @@ Matrix Matrix::solveEquation(Matrix b) {
                 Matrix e = EliminationMatrix(left, i + 1, j + 1);
                 left = e * left;
                 right = e * right;
-                cout << "step #" << steps << ": elimination" << endl;
-                cout << left;
-                cout << right;
-                steps++;
             }
         }
     }
@@ -426,10 +380,6 @@ Matrix Matrix::solveEquation(Matrix b) {
                 Matrix e = EliminationMatrix(left, i + 1, j + 1);
                 left = e * left;
                 right = e * right;
-                cout << "step #" << steps << ": elimination" << endl;
-                cout << left;
-                cout << right;
-                steps++;
             }
         }
     }
@@ -441,29 +391,10 @@ Matrix Matrix::solveEquation(Matrix b) {
         right.setValue(i, 0, right.getValue(i, 0) * value);
     }
 
-    cout << "Diagonal normalization:" << endl;
-    cout << left;
-    cout << right;
-
-    cout << "result:" << endl;
-    cout << right;
-
     return right;
 }
 
 int main() {
-    int n;
-
-    cin >> n;
-    Matrix a = SquareMatrix(n);
-    cin >> a;
-
-    cin >> n;
-    Matrix b = ColumnVector(n);
-    cin >> b;
-
-
-    a.solveEquation(b);
 
 }
 
