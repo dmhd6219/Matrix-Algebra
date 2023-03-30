@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 
 using namespace std;
 
@@ -14,6 +15,7 @@ public:
         return message;
     }
 };
+
 
 class Matrix {
 protected:
@@ -152,7 +154,15 @@ public:
     friend ostream &operator<<(ostream &os, Matrix &matrix) {
         for (int i = 0; i < matrix.n; i++) {
             for (int j = 0; j < matrix.m; j++) {
-                os << setprecision(2) << fixed << matrix.getValue(i, j) << " ";
+                double num = matrix.getValue(i, j);
+                double rounded = round(num * 100.0) / 100.0;
+                if (abs(rounded) < 0.005) {
+                    os << setprecision(2) << fixed << abs(matrix.getValue(i, j)) << " ";
+                } else {
+                    os << setprecision(2) << fixed << matrix.getValue(i, j) << " ";
+                }
+
+
             }
             os << endl;
         }
@@ -161,22 +171,30 @@ public:
 
     double getDeterminant();
 
-    Matrix getIdentity();
+    Matrix getInverse();
 
-    static void printAugmented(Matrix left, Matrix right){
-        if (left.getN() != right.getN() || left.getM() != right.getM()) {
-            throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
-        }
+    Matrix solveEquation(Matrix b);
 
-        for (int i = 0; i < left.getN(); i++){
-            for (int j = 0; j < left.getM(); j++){
+
+    static void printAugmented(Matrix left, Matrix right) {
+
+        for (int i = 0; i < left.getN(); i++) {
+            for (int j = 0; j < left.getM(); j++) {
                 cout << setprecision(2) << fixed << left.getValue(i, j) << " ";
             }
-            for (int j = 0; j < left.getM(); j++){
+            for (int j = 0; j < right.getM(); j++) {
                 cout << setprecision(2) << fixed << right.getValue(i, j) << " ";
             }
             cout << endl;
         }
+    }
+
+};
+
+class ColumnVector : public Matrix {
+public:
+    ColumnVector(int n) : Matrix(n, 1) {
+
     }
 
 };
@@ -276,8 +294,8 @@ double Matrix::getDeterminant() {
     return det;
 }
 
-Matrix Matrix::getIdentity() {
-    if (getN() != getM()){
+Matrix Matrix::getInverse() {
+    if (getN() != getM()) {
         throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
     }
     Matrix left = getCopy();
@@ -336,17 +354,96 @@ Matrix Matrix::getIdentity() {
         }
     }
 
-    for (int i = 0; i < getN(); i++){
+    for (int i = 0; i < getN(); i++) {
         double value = 1 / left.getValue(i, i);
         left.setValue(i, i, left.getValue(i, i) * value);
 
-        for (int j = 0; j < getN(); j++){
+        for (int j = 0; j < getN(); j++) {
             right.setValue(i, j, right.getValue(i, j) * value);
         }
     }
 
     cout << "Diagonal normalization:" << endl;
     printAugmented(left, right);
+
+    cout << "result:" << endl;
+    cout << right;
+
+    return right;
+}
+
+Matrix Matrix::solveEquation(Matrix b) {
+    if (b.getM() != 1) {
+        if (getN() != getM()) {
+            throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
+        }
+    }
+    Matrix left = getCopy();
+    Matrix right = b.getCopy();
+
+    int steps = 0;
+
+    cout << "step #" << steps << ":" << endl;
+    cout << left;
+    cout << right;
+    steps++;
+
+    for (int j = 0; j < getM(); j++) {
+        if (j != left.getM() - 1) {
+            double pivot = left.getValue(j, j);
+            int pivot_i = j;
+            for (int i = j; i < getN(); i++) {
+                if (abs(left.getValue(i, j)) > abs(pivot)) {
+                    pivot = left.getValue(i, j);
+                    pivot_i = i;
+                }
+            }
+            if (pivot_i != j) {
+                Matrix p = PermutationMatrix(left, pivot_i + 1, j + 1);
+                left = p * left;
+                right = p * right;
+                cout << "step #" << steps << ": permutation" << endl;
+                cout << left;
+                cout << right;
+                steps++;
+            }
+        }
+        for (int i = j + 1; i < getN(); i++) {
+            if (left.getValue(i, j) != 0) {
+                Matrix e = EliminationMatrix(left, i + 1, j + 1);
+                left = e * left;
+                right = e * right;
+                cout << "step #" << steps << ": elimination" << endl;
+                cout << left;
+                cout << right;
+                steps++;
+            }
+        }
+    }
+    for (int j = getM() - 1; j >= 0; j--) {
+        for (int i = j - 1; i >= 0; i--) {
+            if (left.getValue(i, j) != 0) {
+                Matrix e = EliminationMatrix(left, i + 1, j + 1);
+                left = e * left;
+                right = e * right;
+                cout << "step #" << steps << ": elimination" << endl;
+                cout << left;
+                cout << right;
+                steps++;
+            }
+        }
+    }
+
+    for (int i = 0; i < getN(); i++) {
+        double value = 1 / left.getValue(i, i);
+
+        left.setValue(i, i, left.getValue(i, i) * value);
+        right.setValue(i, 0, right.getValue(i, 0) * value);
+    }
+
+    cout << "Diagonal normalization:" << endl;
+    cout << left;
+    cout << right;
 
     cout << "result:" << endl;
     cout << right;
@@ -361,15 +458,12 @@ int main() {
     Matrix a = SquareMatrix(n);
     cin >> a;
 
-    a.getIdentity();
-
-//    cout << "i :" <<  endl << i << endl << "-------" << endl;
-//    cout << "e :" <<  endl << e << endl << "-------" << endl;
-//    cout << "e * a :" <<  endl << b << endl << "-------" << endl;
-//    cout << "p :" <<  endl << p << endl << "-------" << endl;
-//    cout << "p * a :" <<  endl << c << endl << "-------" << endl;
+    cin >> n;
+    Matrix b = ColumnVector(n);
+    cin >> b;
 
 
+    a.solveEquation(b);
 
 }
 
