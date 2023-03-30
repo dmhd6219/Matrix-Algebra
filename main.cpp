@@ -172,10 +172,10 @@ public:
 
         for (int i = 0; i < left.getN(); i++){
             for (int j = 0; j < left.getM(); j++){
-                cout << left.getValue(i, j) << " ";
+                cout << setprecision(2) << fixed << left.getValue(i, j) << " ";
             }
             for (int j = 0; j < left.getM(); j++){
-                cout << right.getValue(i, j) << " ";
+                cout << setprecision(2) << fixed << right.getValue(i, j) << " ";
             }
             cout << endl;
         }
@@ -323,6 +323,35 @@ Matrix Matrix::getIdentity() {
         }
     }
 
+    cout << "Way back:" << endl;
+    for (int j = getM() - 1; j >= 0; j--) {
+
+        for (int i = j - 1; i >= 0; i--) {
+            if (left.getValue(i, j) != 0) {
+                Matrix e = EliminationMatrix(left, i + 1, j + 1);
+                left = e * left;
+                right = e * right;
+                cout << "step #" << steps << ": elimination" << endl;
+                printAugmented(left, right);
+                steps++;
+            }
+        }
+    }
+
+    for (int i = 0; i < getN(); i++){
+        double value = 1 / left.getValue(i, i);
+        left.setValue(i, i, left.getValue(i, i) * value);
+
+        for (int j = 0; j < getN(); j++){
+            right.setValue(i, j, right.getValue(i, j) * value);
+        }
+    }
+
+    cout << "Diagonal normalization:" << endl;
+    printAugmented(left, right);
+
+    cout << "result:" << endl;
+    cout << right;
 
 
 }
@@ -334,7 +363,7 @@ int main() {
     Matrix a = SquareMatrix(n);
     cin >> a;
 
-    a.getDeterminant();
+    a.getIdentity();
 
 //    cout << "i :" <<  endl << i << endl << "-------" << endl;
 //    cout << "e :" <<  endl << e << endl << "-------" << endl;
