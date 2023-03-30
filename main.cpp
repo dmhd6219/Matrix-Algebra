@@ -15,8 +15,6 @@ public:
     }
 };
 
-class Matrix;
-
 class Matrix {
 protected:
     unsigned int n;
@@ -353,7 +351,7 @@ Matrix Matrix::getIdentity() {
     cout << "result:" << endl;
     cout << right;
 
-
+    return right;
 }
 
 int main() {
