@@ -15,6 +15,7 @@ public:
     }
 };
 
+class Matrix;
 
 class Matrix {
 protected:
@@ -29,7 +30,7 @@ public:
 
         data = new double *[cols];
         for (int i = 0; i < cols; i++) {
-            data[i] = new double [rows];
+            data[i] = new double[rows];
             for (int j = 0; j < rows; j++) {
                 data[i][j] = 0;
             }
@@ -153,7 +154,7 @@ public:
     friend ostream &operator<<(ostream &os, Matrix &matrix) {
         for (int i = 0; i < matrix.n; i++) {
             for (int j = 0; j < matrix.m; j++) {
-                os << setprecision (2) << fixed << matrix.getValue(i, j) << " ";
+                os << setprecision(2) << fixed << matrix.getValue(i, j) << " ";
             }
             os << endl;
         }
@@ -161,6 +162,24 @@ public:
     }
 
     double getDeterminant();
+
+    Matrix getIdentity();
+
+    static void printAugmented(Matrix left, Matrix right){
+        if (left.getN() != right.getN() || left.getM() != right.getM()) {
+            throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
+        }
+
+        for (int i = 0; i < left.getN(); i++){
+            for (int j = 0; j < left.getM(); j++){
+                cout << left.getValue(i, j) << " ";
+            }
+            for (int j = 0; j < left.getM(); j++){
+                cout << right.getValue(i, j) << " ";
+            }
+            cout << endl;
+        }
+    }
 
 };
 
@@ -203,7 +222,6 @@ public:
         j--;
         double e = -matrix.getValue(i, j) / matrix.getValue(j, j);
         setValue(i, j, e);
-        // TODO could be some problems with double type
     }
 };
 
@@ -220,21 +238,20 @@ public:
 };
 
 double Matrix::getDeterminant() {
-// TODO correct indexes
     Matrix result = getCopy();
     int steps = 1;
 
     for (int j = 0; j < getM(); j++) {
-        if (j != result.getM() - 1){
+        if (j != result.getM() - 1) {
             double pivot = result.getValue(j, j);
             int pivot_i = j;
-            for (int i = 0; i < getN(); i++){
-                if (abs(result.getValue(i, j)) > abs(pivot)){
+            for (int i = j; i < getN(); i++) {
+                if (abs(result.getValue(i, j)) > abs(pivot)) {
                     pivot = result.getValue(i, j);
                     pivot_i = i;
                 }
             }
-            if (pivot_i != j){
+            if (pivot_i != j) {
                 Matrix p = PermutationMatrix(result, pivot_i + 1, j + 1);
                 result = p * result;
                 cout << "step #" << steps << ": permutation" << endl;
@@ -243,7 +260,7 @@ double Matrix::getDeterminant() {
             }
         }
         for (int i = j + 1; i < getN(); i++) {
-            if (result.getValue(i, j) != 0){
+            if (result.getValue(i, j) != 0) {
                 Matrix e = EliminationMatrix(result, i + 1, j + 1);
                 result = e * result;
                 cout << "step #" << steps << ": elimination" << endl;
@@ -257,8 +274,55 @@ double Matrix::getDeterminant() {
     for (int i = 0; i < n; i++) {
         det *= result.getValue(i, i);
     }
-    cout << "result:" << endl << setprecision (2) << fixed << det << endl;
+    cout << "result:" << endl << setprecision(2) << fixed << det << endl;
     return det;
+}
+
+Matrix Matrix::getIdentity() {
+    if (getN() != getM()){
+        throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
+    }
+    Matrix left = getCopy();
+    Matrix right = IdentityMatrix(getN());
+
+    int steps = 0;
+
+    cout << "step #" << steps << ": Augmented Matrix" << endl;
+    printAugmented(left, right);
+    steps++;
+    cout << "Direct way:" << endl;
+
+    for (int j = 0; j < getM(); j++) {
+        if (j != left.getM() - 1) {
+            double pivot = left.getValue(j, j);
+            int pivot_i = j;
+            for (int i = j; i < getN(); i++) {
+                if (abs(left.getValue(i, j)) > abs(pivot)) {
+                    pivot = left.getValue(i, j);
+                    pivot_i = i;
+                }
+            }
+            if (pivot_i != j) {
+                Matrix p = PermutationMatrix(left, pivot_i + 1, j + 1);
+                left = p * left;
+                right = p * right;
+                cout << "step #" << steps << ": permutation" << endl;
+                printAugmented(left, right);
+                steps++;
+            }
+        }
+        for (int i = j + 1; i < getN(); i++) {
+            if (left.getValue(i, j) != 0) {
+                Matrix e = EliminationMatrix(left, i + 1, j + 1);
+                left = e * left;
+                right = e * right;
+                cout << "step #" << steps << ": elimination" << endl;
+                printAugmented(left, right);
+                steps++;
+            }
+        }
+    }
+
 
 
 }
