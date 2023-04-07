@@ -410,7 +410,6 @@ Matrix Matrix::solveGaussianEquation(Matrix b) {
     return right;
 }
 
-
 Matrix Matrix::solveJacobianEquation(Matrix b, long double epsilon) {
     if (getM() != b.getN()) {
         throw MatrixException("The method is not applicable!");
@@ -457,8 +456,7 @@ Matrix Matrix::solveJacobianEquation(Matrix b, long double epsilon) {
         cout << "e: " << error << endl;
 
 
-        cout << "x(" << steps << "):" << endl << newx;
-        steps++;
+        cout << "x(" << steps++ << "):" << endl << newx;
 
         if (error <= epsilon) {
             return x;
@@ -469,23 +467,23 @@ Matrix Matrix::solveJacobianEquation(Matrix b, long double epsilon) {
 }
 
 Matrix Matrix::solveSeidelEquation(Matrix b, long double epsilon) {
-//    if (getM() != b.getN()) {
-//        throw MatrixException("The method is not applicable!");
-//    }
-//    for (int i = 0; i < getN(); i++) {
-//        if (getValue(i, i) == 0) {
-//            throw MatrixException("The method is not applicable!");
-//        }
-//        long double sum = 0;
-//        for (int j = 0; j < getM(); j++) {
-//            if (i != j) {
-//                sum += fabs(getValue(i, j));
-//            }
-//        }
-//        if (fabs(getValue(i, i)) < sum) {
-//            throw MatrixException("The method is not applicable!");
-//        }
-//    }
+    if (getM() != b.getN()) {
+        throw MatrixException("The method is not applicable!");
+    }
+    for (int i = 0; i < getN(); i++) {
+        if (getValue(i, i) == 0) {
+            throw MatrixException("The method is not applicable!");
+        }
+        long double sum = 0;
+        for (int j = 0; j < getM(); j++) {
+            if (i != j) {
+                sum += fabs(getValue(i, j));
+            }
+        }
+        if (fabs(getValue(i, i)) < sum) {
+            throw MatrixException("The method is not applicable!");
+        }
+    }
 
     Matrix aD = SquareMatrix(n);
     for (int i = 0; i < getN(); i++) {
@@ -498,15 +496,15 @@ Matrix Matrix::solveSeidelEquation(Matrix b, long double epsilon) {
     Matrix beta = aDInverse * b;
 
     Matrix aL = SquareMatrix(n);
-    for (int j = 0; j < getM(); j++) {
-        for (int i = j + 1; i < getN(); i++) {
+    for (int j = 0; j < getM(); j++){
+        for (int i = j + 1; i < getN(); i++){
             aL.setValue(i, j, alpha.getValue(i, j));
         }
     }
 
     Matrix aU = SquareMatrix(n);
     for (int j = getM() - 1; j >= 0; j--) {
-        for (int i = j - 1; i >= 0; i--) {
+        for (int i = j - 1; i >= 0; i--){
             aU.setValue(i, j, alpha.getValue(i, j));
         }
     }
@@ -520,16 +518,29 @@ Matrix Matrix::solveSeidelEquation(Matrix b, long double epsilon) {
     cout << "C:" << endl << aU;
     cout << "I-B:" << endl << IminusB;
     cout << "(I-B)_-1:" << endl << IminusBInverse;
+    cout << "x(0):" << endl << beta;
 
-    Matrix x = b.getCopy();
-    while (true) {
+    Matrix x = beta.getCopy();
+    int steps = 1;
+    while (true){
+        Matrix newx = IminusBInverse * (aU * x + beta);
 
-        Matrix newx = IdentityMatrix(x);
-        newx = IminusBInverse * (beta + aU * x);
+        Matrix delta = newx - x;
+        long double error = 0;
+        for (int i = 0; i < delta.getN(); i++) {
+            error += powl(delta.getValue(i, 0), 2);
+        }
+        error = ::sqrt(error);
+        cout << "e: " << error << endl;
 
-        cout << newx << "---" << endl;
+        cout << "x(" << steps++ << "):" << endl << newx;
+
+        if (error <= epsilon) {
+            return x;
+        }
+
+        x = newx;
     }
-
 }
 
 int main() {
