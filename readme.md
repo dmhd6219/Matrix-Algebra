@@ -31,3 +31,9 @@ In C++ programming language write an OOP program (as an extension of the previou
 
 # Task 6
 Write a computer program in C++ programming language to solve a system of linear equations A ⋅ x = b. For this purpose implement a class «ColumnVector» with necessary fields, methods and necessary operators' overloading for summation, multiplication, inputting-outputting and computing the norm.
+
+# Task 7
+Write a computer program in C++ programming language to solve the given system of linear algebraic equations with the use of iterative Jacobi method.
+
+# Task 8
+Write a computer program in C++ programming language to solve the given system of linear algebraic equations with the use of iterative Seidel method.
