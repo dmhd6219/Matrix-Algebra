@@ -6,7 +6,7 @@ In C++ programming language write an OOP program that allows to:
 * add two matrices A and B (overload the + operator, prints the error message);
 * subtract two matrices A and B (overload the - operator, prints the error message if needed);
 * multiply two matrices A and B (overload the * operator, prints the error message if needed);
-* transpose matrix;
+* getTranspose matrix;
 
 # Task 2
 In C++ programming language write an OOP program that allows to:
@@ -15,7 +15,7 @@ In C++ programming language write an OOP program that allows to:
 * add two matrices A and B (overload the + operator using upcasting and downcasting via pointers);
 * subtract two matrices A and B (overload the - operator using upcasting and downcasting via pointers);
 * multiply two matrices A and B (overload the * operator using upcasting and downcasting via pointers);
-* transpose matrix (using upcasting and downcasting via pointers);
+* getTranspose matrix (using upcasting and downcasting via pointers);
 
 # Task 3
 In C++ programming language write an OOP program (as an extension of the previous one) that allows you to:

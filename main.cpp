@@ -4,12 +4,12 @@
 
 using namespace std;
 
-class MatrixDimensionMismatch : public exception {
+class MatrixException : public exception {
 private:
     char *message;
 
 public:
-    MatrixDimensionMismatch(char *msg) : message(msg) {}
+    MatrixException(char *msg) : message(msg) {}
 
     char *what() {
         return message;
@@ -76,7 +76,7 @@ public:
 
     Matrix operator+(Matrix const secondMatrix) const {
         if (n != secondMatrix.n || m != secondMatrix.m) {
-            throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
+            throw MatrixException((char *) "Error: the dimensional problem occurred");
         }
         Matrix answer = Matrix(n, m);
         for (int i = 0; i < n; i++) {
@@ -89,7 +89,7 @@ public:
 
     Matrix operator-(Matrix const secondMatrix) const {
         if (n != secondMatrix.n || m != secondMatrix.m) {
-            throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
+            throw MatrixException((char *) "Error: the dimensional problem occurred");
         }
         Matrix answer = Matrix(n, m);
         for (int i = 0; i < n; i++) {
@@ -102,7 +102,7 @@ public:
 
     Matrix operator*(Matrix const secondMatrix) const {
         if (m != secondMatrix.n) {
-            throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
+            throw MatrixException((char *) "Error: the dimensional problem occurred");
         }
         Matrix answer = Matrix(n, secondMatrix.m);
 
@@ -119,7 +119,7 @@ public:
         return answer;
     }
 
-    Matrix transpose() {
+    Matrix getTranspose() {
 
         Matrix answer = Matrix(m, n);
 
@@ -155,11 +155,13 @@ public:
         for (int i = 0; i < matrix.n; i++) {
             for (int j = 0; j < matrix.m; j++) {
                 double num = matrix.getValue(i, j);
-                double rounded = round(num * 100.0) / 100.0;
-                if (abs(rounded) < 0.005) {
-                    os << setprecision(2) << fixed << abs(matrix.getValue(i, j)) << " ";
+                if (abs(num) < 0.005) {
+                    os << setprecision(4) << fixed << abs(matrix.getValue(i, j));
                 } else {
-                    os << setprecision(2) << fixed << matrix.getValue(i, j) << " ";
+                    os << setprecision(4) << fixed << matrix.getValue(i, j);
+                }
+                if (j != matrix.m - 1) {
+                    cout << " ";
                 }
 
 
@@ -173,7 +175,11 @@ public:
 
     Matrix getInverse();
 
-    Matrix solveEquation(Matrix b);
+    Matrix solveGaussianEquation(Matrix b);
+
+    Matrix solveJacobianEquation(Matrix b, long double epsilon);
+
+    Matrix solveSeidelEquation(Matrix b, long double epsilon);
 
 
     static void printAugmented(Matrix left, Matrix right) {
@@ -255,6 +261,7 @@ public:
 
 double Matrix::getDeterminant() {
     Matrix result = getCopy();
+    int steps = 1;
 
     for (int j = 0; j < getM(); j++) {
         if (j != result.getM() - 1) {
@@ -269,12 +276,18 @@ double Matrix::getDeterminant() {
             if (pivot_i != j) {
                 Matrix p = PermutationMatrix(result, pivot_i + 1, j + 1);
                 result = p * result;
+                cout << "step #" << steps << ": permutation" << endl;
+                cout << result;
+                steps++;
             }
         }
         for (int i = j + 1; i < getN(); i++) {
             if (result.getValue(i, j) != 0) {
                 Matrix e = EliminationMatrix(result, i + 1, j + 1);
                 result = e * result;
+                cout << "step #" << steps << ": elimination" << endl;
+                cout << result;
+                steps++;
             }
         }
     }
@@ -283,12 +296,13 @@ double Matrix::getDeterminant() {
     for (int i = 0; i < n; i++) {
         det *= result.getValue(i, i);
     }
+    cout << "result:" << endl << setprecision(2) << fixed << det << endl;
     return det;
 }
 
 Matrix Matrix::getInverse() {
     if (getN() != getM()) {
-        throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
+        throw MatrixException((char *) "Error: the dimensional problem occurred");
     }
     Matrix left = getCopy();
     Matrix right = IdentityMatrix(getN());
@@ -338,17 +352,19 @@ Matrix Matrix::getInverse() {
         }
     }
 
+
     return right;
 }
 
-Matrix Matrix::solveEquation(Matrix b) {
+Matrix Matrix::solveGaussianEquation(Matrix b) {
     if (b.getM() != 1) {
         if (getN() != getM()) {
-            throw MatrixDimensionMismatch((char *) "Error: the dimensional problem occurred");
+            throw MatrixException((char *) "Error: the dimensional problem occurred");
         }
     }
     Matrix left = getCopy();
     Matrix right = b.getCopy();
+
 
     for (int j = 0; j < getM(); j++) {
         if (j != left.getM() - 1) {
@@ -394,7 +410,151 @@ Matrix Matrix::solveEquation(Matrix b) {
     return right;
 }
 
-int main() {
+
+Matrix Matrix::solveJacobianEquation(Matrix b, long double epsilon) {
+    if (getM() != b.getN()) {
+        throw MatrixException("The method is not applicable!");
+    }
+    for (int i = 0; i < getN(); i++) {
+        if (getValue(i, i) == 0) {
+            throw MatrixException("The method is not applicable!");
+        }
+        long double sum = 0;
+        for (int j = 0; j < getM(); j++) {
+            if (i != j) {
+                sum += getValue(i, j);
+            }
+        }
+        if (getValue(i, i) < sum) {
+            throw MatrixException("The method is not applicable!");
+        }
+    }
+    Matrix aD = SquareMatrix(n);
+    for (int i = 0; i < getN(); i++) {
+        aD.setValue(i, i, getValue(i, i));
+    }
+    Matrix aDInverse = aD.getInverse();
+
+    Matrix alpha = aDInverse * (aD - *this);
+    cout << "alpha:" << endl << alpha;
+
+    Matrix beta = aDInverse * b;
+    cout << "beta:" << endl << beta;
+
+    Matrix x = beta.getCopy();
+    Matrix newx = IdentityMatrix(beta);
+    cout << "x(0):" << endl << x;
+    int steps = 1;
+
+    while (true) {
+        newx = alpha * x + beta;
+        Matrix delta = newx - x;
+        long double error = 0;
+        for (int i = 0; i < delta.getN(); i++) {
+            error += powl(delta.getValue(i, 0), 2);
+        }
+        error = ::sqrt(error);
+        cout << "e: " << error << endl;
+
+
+        cout << "x(" << steps << "):" << endl << newx;
+        steps++;
+
+        if (error <= epsilon) {
+            return x;
+        }
+
+        x = newx;
+    }
+}
+
+Matrix Matrix::solveSeidelEquation(Matrix b, long double epsilon) {
+//    if (getM() != b.getN()) {
+//        throw MatrixException("The method is not applicable!");
+//    }
+//    for (int i = 0; i < getN(); i++) {
+//        if (getValue(i, i) == 0) {
+//            throw MatrixException("The method is not applicable!");
+//        }
+//        long double sum = 0;
+//        for (int j = 0; j < getM(); j++) {
+//            if (i != j) {
+//                sum += fabs(getValue(i, j));
+//            }
+//        }
+//        if (fabs(getValue(i, i)) < sum) {
+//            throw MatrixException("The method is not applicable!");
+//        }
+//    }
+
+    Matrix aD = SquareMatrix(n);
+    for (int i = 0; i < getN(); i++) {
+        aD.setValue(i, i, getValue(i, i));
+    }
+
+    Matrix aDInverse = aD.getInverse();
+
+    Matrix alpha = aDInverse * (aD - *this);
+    Matrix beta = aDInverse * b;
+
+    Matrix aL = SquareMatrix(n);
+    for (int j = 0; j < getM(); j++) {
+        for (int i = j + 1; i < getN(); i++) {
+            aL.setValue(i, j, alpha.getValue(i, j));
+        }
+    }
+
+    Matrix aU = SquareMatrix(n);
+    for (int j = getM() - 1; j >= 0; j--) {
+        for (int i = j - 1; i >= 0; i--) {
+            aU.setValue(i, j, alpha.getValue(i, j));
+        }
+    }
+
+    Matrix IminusB = IdentityMatrix(aL) - aL;
+    Matrix IminusBInverse = IminusB.getInverse();
+
+    cout << "beta:" << endl << beta;
+    cout << "alpha:" << endl << alpha;
+    cout << "B:" << endl << aL;
+    cout << "C:" << endl << aU;
+    cout << "I-B:" << endl << IminusB;
+    cout << "(I-B)_-1:" << endl << IminusBInverse;
+
+    Matrix x = b.getCopy();
+    while (true) {
+
+        Matrix newx = IdentityMatrix(x);
+        newx = IminusBInverse * (beta + aU * x);
+
+        cout << newx << "---" << endl;
+    }
 
 }
+
+int main() {
+    int n;
+    cin >> n;
+
+    Matrix a = SquareMatrix(n);
+    cin >> a;
+
+    cin >> n;
+    Matrix b = ColumnVector(n);
+    cin >> b;
+
+    double epsilon;
+    cin >> epsilon;
+
+    try {
+        a.solveSeidelEquation(b, epsilon);
+    }
+    catch (MatrixException e) {
+        cout << e.what() << endl;
+    }
+    return 0;
+
+}
+
+
 
