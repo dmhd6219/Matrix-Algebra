@@ -1,4 +1,4 @@
-#Matrix Algebra
+# Matrix Algebra
 Was created as homework for Linear Algerba course at Innopolis University.
 
 ## Task 1
